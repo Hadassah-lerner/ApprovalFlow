@@ -1,0 +1,45 @@
+flowchart LR
+
+subgraph Client
+    User[Employee / Vendor]
+end
+
+subgraph Edge
+    Gateway[YARP API Gateway]
+end
+
+subgraph Services
+    Submission[Submission Service]
+    Approval[Approval Service\nWorkflow Orchestrator]
+    Payment[Payment Service]
+    Platform[Platform Service\nAudit + Notifications]
+end
+
+subgraph Infrastructure
+    Rabbit[(RabbitMQ)]
+    Redis[(Redis State Store)]
+    PostgreSQL[(PostgreSQL)]
+    Ollama[Ollama]
+    Config[Dapr Configuration]
+end
+
+User --> Gateway
+Gateway --> Submission
+
+Submission --> PostgreSQL
+Submission -->|InvoiceSubmitted| Rabbit
+
+Rabbit --> Approval
+
+Approval --> Config
+Approval --> Ollama
+Approval --> Redis
+
+Approval -->|PaymentRequested| Rabbit
+Rabbit --> Payment
+
+Payment --> PostgreSQL
+Payment -->|PaymentCompleted| Rabbit
+
+Rabbit --> Platform
+Platform --> PostgreSQL

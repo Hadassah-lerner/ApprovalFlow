@@ -1,0 +1,19 @@
+flowchart TD
+
+A[Invoice Approved]
+
+--> B[Reserve Payment]
+
+--> C[Execute Payment]
+
+C -->|Success| D[Payment Completed]
+
+C -->|Failure| E[Retry]
+
+E -->|Success| D
+
+E -->|Failure| F[Compensation]
+
+F --> G[Release Reservation]
+
+G --> H[Manual Finance Review]

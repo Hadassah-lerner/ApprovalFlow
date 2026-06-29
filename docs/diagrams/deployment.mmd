@@ -1,0 +1,43 @@
+flowchart TB
+
+subgraph Docker Compose
+
+subgraph Edge
+Gateway[YARP Gateway]
+end
+
+subgraph Business Services
+Submission[Submission Service]
+Approval[Approval Service]
+Payment[Payment Service]
+Platform[Platform Service]
+end
+
+subgraph Infrastructure
+Rabbit[(RabbitMQ)]
+Redis[(Redis)]
+Postgres[(PostgreSQL)]
+Ollama[Ollama]
+end
+
+Gateway --> Submission
+
+Submission --> Rabbit
+
+Rabbit --> Approval
+
+Approval --> Rabbit
+
+Rabbit --> Payment
+
+Rabbit --> Platform
+
+Submission --> Postgres
+Payment --> Postgres
+Platform --> Postgres
+
+Approval --> Redis
+
+Approval --> Ollama
+
+end

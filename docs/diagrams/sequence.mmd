@@ -1,0 +1,48 @@
+sequenceDiagram
+
+actor User
+
+participant Gateway
+participant Submission
+participant Approval
+participant AI
+participant Payment
+participant Platform
+
+User->>Gateway: Submit Invoice
+
+Gateway->>Submission: POST /invoice
+
+Submission->>Submission: Validate
+
+Submission-->>User: 202 Accepted\nTracking ID
+
+Submission->>Approval: InvoiceSubmitted (Pub/Sub)
+
+Approval->>AI: Evaluate Invoice
+
+AI-->>Approval: Recommendation JSON
+
+Approval->>Approval: Apply Policy Rules
+
+alt Auto Approval
+
+Approval->>Payment: Start Payment
+
+Payment-->>Approval: Payment Success
+
+Approval->>Platform: Notify Submitter
+
+else Human Approval
+
+Approval->>Platform: Notify Approver
+
+Platform-->>Approval: Human Decision
+
+Approval->>Payment: Start Payment
+
+Payment-->>Approval: Payment Success
+
+Approval->>Platform: Notify Submitter
+
+end

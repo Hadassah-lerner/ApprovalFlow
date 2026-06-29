@@ -1,0 +1,26 @@
+flowchart TB
+
+subgraph Submission_Bounded_Context
+    Invoice
+    TrackingID
+    Idempotency
+end
+
+subgraph Approval_Bounded_Context
+    Workflow
+    AI
+    Policy
+    HumanApproval
+    Saga
+end
+
+subgraph Payment_Bounded_Context
+    Reservation
+    PaymentExecution
+    Compensation
+end
+
+subgraph Platform_Bounded_Context
+    Notifications
+    AuditTrail
+end
