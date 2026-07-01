@@ -1,0 +1,17 @@
+<Solution>
+  <Folder Name="/backend/" />
+  <Folder Name="/backend/src/">
+    <Project Path="backend/src/BuildingBlocks/BuildingBlocks.csproj" />
+    <Project Path="backend/src/Gateway/Gateway.csproj" />
+    <Project Path="backend/src/Shared/Shared.csproj" />
+  </Folder>
+  <Folder Name="/backend/src/Services/">
+    <Project Path="backend/src/Services/ApprovalService/ApprovalService.csproj" />
+    <Project Path="backend/src/Services/PaymentService/PaymentService.csproj" />
+    <Project Path="backend/src/Services/PlatformService/PlatformService.csproj" />
+    <Project Path="backend/src/Services/SubmissionService/SubmissionService.csproj" />
+  </Folder>
+  <Folder Name="/backend/tests/">
+    <Project Path="backend/tests/IntegrationTests/IntegrationTests.csproj" />
+  </Folder>
+</Solution>
