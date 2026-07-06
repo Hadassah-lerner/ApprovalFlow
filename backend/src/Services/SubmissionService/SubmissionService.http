@@ -1,6 +1,34 @@
 @SubmissionService_HostAddress = http://localhost:5030
 
-GET {{SubmissionService_HostAddress}}/weatherforecast/
+POST {{SubmissionService_HostAddress}}/api/invoices
+Content-Type: application/json
+
+{
+  "submitter": "Odelia",
+  "department": "Engineering",
+  "vendor": "Acme Corp",
+  "vendorKnown": true,
+  "invoiceNumber": "INV-2026-LIVE",
+  "category": 1, 
+  "currency": 0, 
+  "taxAmount": 15.50,
+  "total": 115.50,
+  "receiptPresent": true,
+  "invoiceDate": "2026-07-06T12:00:00Z",
+  "notes": "Development team supplies",
+  "lineItems": [
+    {
+      "description": "Developer Monitor",
+      "quantity": 1,
+      "unitPrice": 100.00
+    }
+  ]
+}
+
+###
+
+GET {{SubmissionService_HostAddress}}/api/invoices/d5d77f2e-09fd-425c-b861-f7a13e641117/status
 Accept: application/json
 
 ###
+
