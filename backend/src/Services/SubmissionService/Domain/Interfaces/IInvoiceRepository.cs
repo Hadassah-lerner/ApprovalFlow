@@ -10,7 +10,7 @@ namespace SubmissionService.Domain.Interfaces
 
         Task<IEnumerable<Invoice>> GetAllAsync();
 
-        Task UpdateAsync(Invoice invoice);
+        void Update(Invoice invoice);
 
         Task<bool> ExistsAsync(string vendor, string invoiceNumber, decimal total);
         Task SaveChangesAsync();

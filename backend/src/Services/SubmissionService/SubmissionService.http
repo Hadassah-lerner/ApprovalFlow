@@ -4,11 +4,11 @@ POST {{SubmissionService_HostAddress}}/api/invoices
 Content-Type: application/json
 
 {
-  "submitter": "Odelia",
+  "submitter": "Noa",
   "department": "Engineering",
   "vendor": "Acme Corp",
   "vendorKnown": true,
-  "invoiceNumber": "INV-2026-LIVE",
+  "invoiceNumber": "INV-2026-TRY",
   "category": 1, 
   "currency": 0, 
   "taxAmount": 15.50,

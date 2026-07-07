@@ -1,6 +1,7 @@
 ﻿using SubmissionService.Api.Requests;
 using SubmissionService.Api.Responses;
 using SubmissionService.Application.Features.InvoiceSubmission.DTOs;
+using SubmissionService.Domain.Entities;
 
 namespace SubmissionService.Api.Mapping;
 
@@ -41,6 +42,22 @@ public static class ApiMapper
             InvoiceId = response.Id,
             Status = response.Status,
             Message = response.Message
+        };
+    }
+    public static InvoiceDetailsResponse ToDetailsResponse(Invoice invoice)
+    {
+        return new InvoiceDetailsResponse
+        {
+            Id = invoice.Id,
+            Submitter = invoice.Submitter,
+            Department = invoice.Department,
+            Vendor = invoice.Vendor,
+            InvoiceNumber = invoice.InvoiceNumber,
+            Category = invoice.Category,
+            Currency = invoice.Currency,
+            Total = invoice.Total,
+            TaxAmount = invoice.TaxAmount,
+            Status = invoice.ApprovalStatus.ToString()
         };
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SubmissionService.Api.Mapping;
 using SubmissionService.Api.Requests;
+using SubmissionService.Api.Responses;
 using SubmissionService.Application.Features.InvoiceSubmission;
 using SubmissionService.Application.Features.InvoiceSubmission.DTOs;
 
@@ -49,7 +50,7 @@ public class InvoiceController : ControllerBase
         if (invoice == null)
             return NotFound();
 
-        return Ok(invoice);
+        return Ok(ApiMapper.ToDetailsResponse(invoice));
     }
 
     [HttpGet("{id:guid}/status")]
@@ -60,7 +61,7 @@ public class InvoiceController : ControllerBase
         if (invoice == null)
             return NotFound();
 
-        return Ok(new
+        return Ok(new InvoiceStatusResponse
         {
             InvoiceId = invoice.Id,
             Status = invoice.ApprovalStatus.ToString()

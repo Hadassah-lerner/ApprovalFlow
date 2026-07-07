@@ -22,6 +22,7 @@ namespace SubmissionService.Domain.Entities
         public ApprovalStatus ApprovalStatus { get; private set; }
         public decimal LineItemsTotal =>
         LineItems.Sum(x => x.Total);
+        public bool RequiresReceipt => Total > 25;
 
         public Invoice(
             string? trackingId,
@@ -69,11 +70,6 @@ namespace SubmissionService.Domain.Entities
             return Vendor == other.Vendor &&
                    InvoiceNumber == other.InvoiceNumber &&
                    Total == other.Total;
-        }
-
-        public bool HasReceiptRequired()
-        {
-            return Total > 25;
         }
 
         private Invoice()

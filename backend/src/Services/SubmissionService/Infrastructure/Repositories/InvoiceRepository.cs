@@ -23,6 +23,7 @@ namespace SubmissionService.Infrastructure.Repositories
         public async Task<Invoice?> GetByIdAsync(Guid id)
         {
             return await _context.Invoices
+                .AsNoTracking()
                 .Include(i => i.LineItems)
                 .FirstOrDefaultAsync(i => i.Id == id);
         }
@@ -30,14 +31,14 @@ namespace SubmissionService.Infrastructure.Repositories
         public async Task<IEnumerable<Invoice>> GetAllAsync()
         {
             return await _context.Invoices
+                .AsNoTracking()
                 .Include(i => i.LineItems)
                 .ToListAsync();
         }
 
-        public async Task UpdateAsync(Invoice invoice)
+        public void Update(Invoice invoice)
         {
             _context.Invoices.Update(invoice);
-            await Task.CompletedTask;
         }
 
         public async Task<bool> ExistsAsync(string vendor, string invoiceNumber, decimal total)

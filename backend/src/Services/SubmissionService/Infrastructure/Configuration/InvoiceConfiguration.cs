@@ -10,6 +10,16 @@ namespace SubmissionService.Infrastructure.Configuration
         {
             builder.HasKey(x => x.Id);
 
+            builder.HasIndex(x => x.TrackingId)
+                   .IsUnique();
+
+            builder.HasIndex(x => new
+            {
+                x.Vendor,
+                x.InvoiceNumber,
+                x.Total
+            });
+
             builder.Property(x => x.TrackingId) 
                 .IsRequired()
                 .HasMaxLength(50);
