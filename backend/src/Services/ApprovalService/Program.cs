@@ -1,41 +1,45 @@
+using ApprovalService.Domain.Interfaces;
+using ApprovalService.Infrastructure.Persistence;
+using ApprovalService.Infrastructure.Services;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+builder.Services.AddDbContext<ApprovalDbContext>(options =>
+    options.UseNpgsql(connectionString));
+
+builder.Services.AddControllers().AddDapr();
+
+builder.Services.AddEndpointsApiExplorer();
+
+builder.Services.AddSwaggerGen();
+
+var ollamaUrl =
+    builder.Configuration["Ollama:BaseUrl"];
+
+builder.Services.AddHttpClient<
+    IOllamaClassifierService,
+    OllamaClassifierService>(client =>
+    {
+        client.BaseAddress = new Uri(ollamaUrl!);
+        client.Timeout = TimeSpan.FromSeconds(30);
+    });
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+app.UseCloudEvents();
+
+app.UseAuthorization();
+
+app.MapControllers();
+app.MapSubscribeHandler();
+
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
-
-app.UseHttpsRedirection();
-
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
