@@ -22,15 +22,11 @@
     <Folder Include="Api\Endpoints\" />
     <Folder Include="Api\Requests\" />
     <Folder Include="Api\Responses\" />
-    <Folder Include="Application\Features\" />
     <Folder Include="Application\Features\InvoiceApproval\Commands\SubmitInvoice\" />
-    <Folder Include="Application\Interfaces\" />
     <Folder Include="Domain\ValueObjects\" />
-    <Folder Include="Infrastructure\Messaging\" />
     <Folder Include="Infrastructure\Configuration\" />
     <Folder Include="Infrastructure\Clients\" />
     <Folder Include="Infrastructure\Persistence\" />
-    <Folder Include="Infrastructure\Repositories\" />
   </ItemGroup>
 
   <ItemGroup>

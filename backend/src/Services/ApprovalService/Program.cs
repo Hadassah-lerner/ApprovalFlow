@@ -1,45 +1,40 @@
-using ApprovalService.Domain.Interfaces;
+using ApprovalService.Infrastructure;
 using ApprovalService.Infrastructure.Persistence;
-using ApprovalService.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-
-builder.Services.AddDbContext<ApprovalDbContext>(options =>
-    options.UseNpgsql(connectionString));
-
-builder.Services.AddControllers().AddDapr();
+builder.Services.AddControllers()
+    .AddDapr();
 
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen();
 
-var ollamaUrl =
-    builder.Configuration["Ollama:BaseUrl"];
-
-builder.Services.AddHttpClient<
-    IOllamaClassifierService,
-    OllamaClassifierService>(client =>
-    {
-        client.BaseAddress = new Uri(ollamaUrl!);
-        client.Timeout = TimeSpan.FromSeconds(30);
-    });
+builder.Services.AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 
 app.UseCloudEvents();
 
 app.UseAuthorization();
 
 app.MapControllers();
+
 app.MapSubscribeHandler();
 
-if (app.Environment.IsDevelopment())
+using (var scope = app.Services.CreateScope())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    var dbContext = scope.ServiceProvider
+        .GetRequiredService<ApprovalDbContext>();
+
+    dbContext.Database.Migrate();
 }
 
 app.Run();
