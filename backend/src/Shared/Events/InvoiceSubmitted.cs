@@ -1,7 +1,7 @@
 ﻿using Shared.Enums;
 
-namespace Shared.Events;
-
+namespace Shared.Events
+{ 
 public class InvoiceSubmitted
 {
     public Guid InvoiceId { get; init; }
@@ -33,4 +33,5 @@ public class InvoiceSubmitted
     public string Notes { get; init; } = string.Empty;
 
     public DateTime SubmittedAt { get; init; } = DateTime.UtcNow;
+}
 }
