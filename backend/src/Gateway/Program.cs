@@ -25,10 +25,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
-
 app.UseCors("AllowFrontend");
 
 app.MapReverseProxy();
 
-app.Run();
+app.Run("http://localhost:5251");
