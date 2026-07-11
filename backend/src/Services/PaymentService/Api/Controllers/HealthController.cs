@@ -2,7 +2,7 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace SubmissionService.Api;
+namespace PaymentService.Api;
 
 [ApiController]
 [Route("health")]

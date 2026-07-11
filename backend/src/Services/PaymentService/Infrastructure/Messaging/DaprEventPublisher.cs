@@ -3,6 +3,8 @@ using PaymentService.Domain.Entities;
 using PaymentService.Domain.Interfaces;
 using Shared.Events;
 using PaymentService.Application.Common.Abstractions;
+using System;
+using System.Threading.Tasks;
 
 namespace PaymentService.Infrastructure.Messaging
 {
@@ -10,11 +12,13 @@ namespace PaymentService.Infrastructure.Messaging
     {
         private readonly DaprClient _daprClient;
         private readonly IClock _clock;
+        private readonly ILogger<DaprEventPublisher> _logger;
 
-        public DaprEventPublisher(DaprClient daprClient, IClock clock)
+        public DaprEventPublisher(DaprClient daprClient, IClock clock, ILogger<DaprEventPublisher> logger)
         {
             _daprClient = daprClient;
             _clock = clock;
+            _logger = logger;
         }
 
         public async Task PublishPaymentSucceededAsync(Payment payment)
@@ -26,15 +30,20 @@ namespace PaymentService.Infrastructure.Messaging
                 PaidAt = payment.CompletedAt ?? _clock.UtcNow
             };
 
-            await _daprClient.PublishEventAsync(
-                "pubsub",
-                "payment-succeeded",
-                paymentSucceeded);
+            try
+            {
+                await _daprClient.PublishEventAsync(
+                    "pubsub",
+                    "payment-succeeded",
+                    paymentSucceeded);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"[Isolated Test Mode] Dapr Succeeded Publish skipped/failed: {ex.Message}");
+            }
         }
 
-        public async Task PublishPaymentFailedAsync(
-            Payment payment,
-            string reason)
+        public async Task PublishPaymentFailedAsync(Payment payment, string reason)
         {
             var paymentFailed = new PaymentFailed
             {
@@ -43,10 +52,17 @@ namespace PaymentService.Infrastructure.Messaging
                 Reason = reason
             };
 
-            await _daprClient.PublishEventAsync(
-                "pubsub",
-                "payment-failed",
-                paymentFailed);
+            try
+            {
+                await _daprClient.PublishEventAsync(
+                    "pubsub",
+                    "payment-failed",
+                    paymentFailed);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"[Isolated Test Mode] Dapr Failed Publish skipped/failed: {ex.Message}");
+            }
         }
     }
 }
