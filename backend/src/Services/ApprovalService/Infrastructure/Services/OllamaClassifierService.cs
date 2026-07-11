@@ -1,12 +1,12 @@
 ﻿using ApprovalService.Domain.Interfaces;
 using ApprovalService.Domain.Models;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using static ApprovalService.Domain.Interfaces.IOllamaClassifierService;
 
 namespace ApprovalService.Infrastructure.Services
 {
@@ -34,18 +34,18 @@ namespace ApprovalService.Infrastructure.Services
             - Items: {itemsDescription}
 
             You MUST respond ONLY with a valid JSON object matching this schema: {{
-                ""urgencyLevel"": ""High"" or ""Medium"" or ""Low"",
-                ""category"": ""Software"" or ""Hardware"" or ""Marketing"" or ""OfficeSupplies"" or ""Other"",
+                ""suggestedCategory"": ""Software"" or ""Hardware"" or ""Marketing"" or ""OfficeSupplies"" or ""Other"",
+                ""confidence"": 0.95,
                 ""reasoning"": ""A short one-sentence explanation for your decision""
             }}
             Do not include any markdown formatting, backticks (```), or extra text. Just raw JSON.";
 
             var requestBody = new OllamaChatRequest
             {
-                Model = "llama3", 
+                Model = "mistral", 
                 Prompt = prompt,
                 Stream = false,
-                Format = "json" 
+                Format = "json"
             };
 
             try
@@ -68,7 +68,6 @@ namespace ApprovalService.Infrastructure.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to call Ollama. Returning fallback classification.");
-                _logger.LogWarning("Using fallback AI classification.");
                 return GetDefaultFallback();
             }
         }
@@ -77,9 +76,10 @@ namespace ApprovalService.Infrastructure.Services
         {
             return new ClassificationResult
             {
-                UrgencyLevel = "Medium",
-                Category = "Other",
-                Reasoning = "Fallback applied due to AI service unavailability."
+                SuggestedCategory = "Other",
+                Confidence = 0.50, 
+                Reasoning = "Fallback applied due to AI service unavailability.",
+                DetectedViolations = new System.Collections.Generic.List<string> { "AI_SERVICE_UNAVAILABLE" }
             };
         }
     }

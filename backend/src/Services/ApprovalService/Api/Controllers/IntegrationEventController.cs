@@ -1,6 +1,13 @@
 ﻿using Dapr;
 using Microsoft.AspNetCore.Mvc;
-using ApprovalService.Application.Features.ApproveInvoice;
+using ApprovalService.Application.Features.ProcessInvoice;
+using ApprovalService.Api.Events;
+using ApprovalService.Application.Interfaces;
+using ApprovalService.Domain.Entities;
+using Shared.Enums;
+using System;
+using System.Threading.Tasks;
+using Dapr.Client; 
 
 namespace ApprovalService.Api.Controllers;
 
@@ -8,23 +15,86 @@ namespace ApprovalService.Api.Controllers;
 [Route("api/invoices")]
 public class ApprovalController : ControllerBase
 {
-    private readonly ApproveInvoiceService _approveInvoiceService;
+    private readonly ProcessInvoiceService _processInvoiceService;
+    private readonly IInvoiceRepository _invoiceRepository;
+    private readonly ILogger<ApprovalController> _logger;
+    private readonly DaprClient _daprClient; 
 
     public ApprovalController(
-        ApproveInvoiceService approveInvoiceService)
+        ProcessInvoiceService processInvoiceService,
+        IInvoiceRepository invoiceRepository,
+        ILogger<ApprovalController> logger,
+        DaprClient daprClient) 
     {
-        _approveInvoiceService = approveInvoiceService;
+        _processInvoiceService = processInvoiceService;
+        _invoiceRepository = invoiceRepository;
+        _logger = logger;
+        _daprClient = daprClient;
+    }
+
+    [Topic("pubsub", "invoice-submitted")]
+    [HttpPost("sub/invoice-submitted")]
+    public async Task<IActionResult> OnInvoiceSubmitted([FromBody] InvoiceSubmittedEvent invoiceSubmittedEvent)
+    {
+        if (invoiceSubmittedEvent == null) return BadRequest("Event data is null");
+
+        WorkflowContext context = await _processInvoiceService.ProcessAsync(invoiceSubmittedEvent);
+
+        if (context.FinalDecision == "Approved")
+        {
+            _logger.LogInformation($"[Approval AI] Invoice {invoiceSubmittedEvent.Id} was AUTO-APPROVED! Publishing payment request...");
+
+            var paymentRequest = new
+            {
+                InvoiceId = invoiceSubmittedEvent.Id,
+                TrackingId = invoiceSubmittedEvent.TrackingId ?? $"TRK-{Guid.NewGuid().ToString().Substring(0, 8)}",
+                Amount = invoiceSubmittedEvent.Total,
+                Currency = (int)invoiceSubmittedEvent.Currency,
+                Vendor = invoiceSubmittedEvent.Vendor,
+                RequestedAt = DateTime.UtcNow
+            };
+
+            await _daprClient.PublishEventAsync("pubsub", "payment-requested", paymentRequest);
+        }
+        else
+        {
+            _logger.LogInformation($"[Approval AI] Invoice {invoiceSubmittedEvent.Id} requires human touch. Waiting for manual approval...");
+
+        }
+
+        return Ok(new
+        {
+            InvoiceId = invoiceSubmittedEvent.Id,
+            Decision = context.FinalDecision,
+            Category = context.Category
+        });
     }
 
     [HttpPost("{id:guid}/approve")]
     public async Task<IActionResult> Approve(Guid id)
     {
-        try
+        InvoiceApproval? approvalRecord = await _invoiceRepository.GetByIdAsync(id);
+
+        if (approvalRecord == null)
         {
-            await _approveInvoiceService.ApproveAsync(id);
-            return Ok();
+            return NotFound(new { Message = $"Invoice approval record with ID {id} was not found." });
         }
-        catch (InvalidOperationException ex)
-        { return NotFound(new { Message = ex.Message }); }
+
+        approvalRecord.ChangeStatus(ApprovalStatus.Approved);
+
+        await _invoiceRepository.SaveChangesAsync();
+
+        var paymentRequest = new
+        {
+            InvoiceId = approvalRecord.Id,
+            TrackingId = approvalRecord.TrackingId ?? $"TRK-{Guid.NewGuid().ToString().Substring(0, 8)}",
+            Amount = approvalRecord.Total,
+            Currency = (int)approvalRecord.Currency,
+            Vendor = approvalRecord.Vendor,
+            RequestedAt = DateTime.UtcNow
+        };
+        await _daprClient.PublishEventAsync("pubsub", "payment-requested", paymentRequest);
+
+        return Ok(new { Message = "Invoice manually approved successfully and moved to payment." });
     }
 }

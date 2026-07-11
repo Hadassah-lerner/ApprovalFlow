@@ -1,6 +1,7 @@
 using ApprovalService.Infrastructure;
 using ApprovalService.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,8 +18,19 @@ var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwagger(c =>
+    {
+        c.PreSerializeFilters.Add((swaggerDoc, httpReq) =>
+        {
+            swaggerDoc.Servers = new List<OpenApiServer> { new OpenApiServer { Url = "/approval" } };
+        });
+    });
+
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/approval/swagger/v1/swagger.json", "Approval API V1");
+        c.RoutePrefix = "approval/swagger";
+    });
 }
 
 app.UseCloudEvents();

@@ -2,8 +2,9 @@
 {
     public class ClassificationResult
     {
-        public string UrgencyLevel { get; set; } = string.Empty;
-        public string Category { get; set; } = string.Empty;
+        public string SuggestedCategory { get; set; } = string.Empty;
+        public double Confidence { get; set; }
         public string Reasoning { get; set; } = string.Empty;
+        public List<string> DetectedViolations { get; set; } = new List<string>();
     }
 }

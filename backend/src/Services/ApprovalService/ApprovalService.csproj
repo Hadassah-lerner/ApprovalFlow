@@ -22,7 +22,6 @@
     <Folder Include="Api\Endpoints\" />
     <Folder Include="Api\Requests\" />
     <Folder Include="Api\Responses\" />
-    <Folder Include="Application\Features\InvoiceApproval\Commands\SubmitInvoice\" />
     <Folder Include="Domain\ValueObjects\" />
     <Folder Include="Infrastructure\Configuration\" />
     <Folder Include="Infrastructure\Clients\" />
@@ -33,4 +32,10 @@
     <ProjectReference Include="..\..\Shared\Shared.csproj" />
   </ItemGroup>
 
+	<ItemGroup>
+		<None Update="Policies\policy.md">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+	
 </Project>
