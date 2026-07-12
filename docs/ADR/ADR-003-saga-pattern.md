@@ -8,7 +8,7 @@ The payment process includes multiple services. Failures occurring after partial
 
 ## Decision:
 The system uses an *Orchestration-Based Saga.*
-Each payment step defines a matching compensating action, allowing previously completed operations to be reversed when a later step fails.
+The system follows a simplified orchestration-based saga where the Approval Service coordinates the payment workflow through asynchronous events. Compensation logic is considered a future extension.
 
 ## Alternatives Considered:
 *Simple Retry*
