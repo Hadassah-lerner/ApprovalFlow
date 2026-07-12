@@ -1,3 +1,4 @@
+using ApprovalService.Application.Features.GetPendingInvoices;
 using ApprovalService.Infrastructure;
 using ApprovalService.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -6,9 +7,16 @@ using Microsoft.OpenApi.Models;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers()
-    .AddDapr();
+    .AddDapr()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+    });
+    
 
 builder.Services.AddEndpointsApiExplorer();
+
+builder.Services.AddScoped<InvoiceApprovalService>();
 
 builder.Services.AddSwaggerGen();
 

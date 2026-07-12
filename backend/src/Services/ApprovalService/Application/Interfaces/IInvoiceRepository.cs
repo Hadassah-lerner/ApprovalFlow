@@ -8,5 +8,9 @@ public interface IInvoiceRepository
 
     Task<InvoiceApproval?> GetByIdAsync(Guid id);
 
+    Task<InvoiceApproval?> GetTrackedByIdAsync(Guid id);
+
     Task SaveChangesAsync();
+
+    Task<IEnumerable<InvoiceApproval>> GetByStatusAsync(string status);
 }

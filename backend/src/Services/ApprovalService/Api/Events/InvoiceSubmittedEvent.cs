@@ -25,5 +25,6 @@ namespace ApprovalService.Api.Events
             int Quantity,
             decimal UnitPrice
         );
-    }
+    
+}
 

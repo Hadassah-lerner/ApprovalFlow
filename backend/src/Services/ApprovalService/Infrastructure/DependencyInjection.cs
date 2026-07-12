@@ -61,7 +61,7 @@ public static class DependencyInjection
         services.AddHttpClient("OllamaClient", client =>
         {
             client.BaseAddress = new Uri(ollamaUrl);
-            client.Timeout = TimeSpan.FromSeconds(60); // הגדלת ה-Timeout ל-60 שניות כי מודלים מקומיים לפעמים איטיים בחילוץ JSON
+            client.Timeout = TimeSpan.FromSeconds(60);
         });
 
         services.AddHttpClient<IOllamaClassifierService, OllamaClassifierService>(client =>

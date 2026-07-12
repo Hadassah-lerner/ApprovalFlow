@@ -77,7 +77,7 @@ namespace ApprovalService.Infrastructure.Services
             return new ClassificationResult
             {
                 SuggestedCategory = "Other",
-                Confidence = 0.50, 
+                Confidence = 0.50m, 
                 Reasoning = "Fallback applied due to AI service unavailability.",
                 DetectedViolations = new System.Collections.Generic.List<string> { "AI_SERVICE_UNAVAILABLE" }
             };

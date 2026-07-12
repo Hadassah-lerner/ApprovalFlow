@@ -1,4 +1,8 @@
-﻿using ApprovalService.Application.Common.Abstractions;
+﻿using System;
+using System.IO;
+using System.Text.RegularExpressions;
+using ApprovalService.Application.Common.Abstractions;
+using Microsoft.Extensions.Logging;
 
 namespace ApprovalService.Infrastructure.Services
 {
@@ -22,8 +26,6 @@ namespace ApprovalService.Infrastructure.Services
                     _logger.LogError($"Policy file not found at path: {_policyFilePath}");
                     throw new FileNotFoundException($"Critical Error: policy.md is missing from {_policyFilePath}");
                 }
-
-                _logger.LogInformation("Successfully loading policy.md from disk.");
                 return File.ReadAllText(_policyFilePath);
             }
             catch (Exception ex)
@@ -31,6 +33,44 @@ namespace ApprovalService.Infrastructure.Services
                 _logger.LogError(ex, "Failed to read policy file.");
                 throw;
             }
+        }
+
+        public decimal GetDecimalThreshold(string key, decimal defaultValue)
+        {
+            try
+            {
+                string policyContent = LoadPolicy();
+
+                var match = Regex.Match(policyContent, $@"\|?\s*`{key}`\s*\|\s*\*?\$?([0-9.,]+)\*?\s*\|");
+
+                if (match.Success && decimal.TryParse(match.Groups[1].Value, out decimal result))
+                {
+                    return result;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, $"Failed to parse dynamic threshold for {key}. Using default: {defaultValue}");
+            }
+            return defaultValue;
+        }
+
+        public decimal GetSaaSLimit(decimal defaultValue)
+        {
+            try
+            {
+                string policyContent = LoadPolicy();
+                var match = Regex.Match(policyContent, @"\|?\s*`SAAS-01`\s*\|.*?up to\s*\*?\$?([0-9.,]+)");
+                if (match.Success && decimal.TryParse(match.Groups[1].Value, out decimal result))
+                {
+                    return result;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, $"Failed to parse SAAS limit. Using default: {defaultValue}");
+            }
+            return defaultValue;
         }
     }
 }

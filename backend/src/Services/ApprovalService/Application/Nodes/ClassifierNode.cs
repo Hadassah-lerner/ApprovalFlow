@@ -67,7 +67,7 @@ namespace ApprovalService.Application.Nodes
             catch (Exception ex)
             {
                 context.Category = "Other";
-                context.Confidence = 0.5;
+                context.Confidence = 0.5m;
                 context.PolicyViolations = new List<string> { "AI_CLASSIFICATION_FAILED" };
                 context.AiRawResult = "Fallback applied due to exception: " + ex.Message;
             }

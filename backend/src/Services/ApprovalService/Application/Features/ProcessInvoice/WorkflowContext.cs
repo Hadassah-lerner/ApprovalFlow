@@ -9,10 +9,11 @@
         public string FinalPrompt { get; set; } 
         public string AiRawResult { get; set; }
         public string Category { get; set; }
-        public double Confidence { get; set; }
+        public decimal Confidence { get; set; }
         public string FinalDecision { get; set; } 
         public List<string> PolicyViolations { get; set; } = new List<string>();
         public bool RequiresHumanReview => FinalDecision == "HumanReview";
         public string PolicyText { get; set; } = string.Empty;
+        public string SuggestedCategory { get; set; } = string.Empty;
     }
 }

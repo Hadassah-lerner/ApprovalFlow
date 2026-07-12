@@ -1,67 +1,67 @@
-﻿using ApprovalService.Api.Events;
-using ApprovalService.Application.Common.Abstractions;
+﻿using ApprovalService.Application.Common.Abstractions;
 using ApprovalService.Application.Features.ProcessInvoice;
+using ApprovalService.Domain.Interfaces;
 using ApprovalService.Domain.Entities;
-using ApprovalService.Infrastructure.Persistence;
+using ApprovalService.Api.Events;
+using Shared.Enums;
+using System.Threading.Tasks;
+using ApprovalService.Application.Interfaces;
 
 namespace ApprovalService.Application.Nodes
 {
     public class SaveNode : IWorkflowNode
     {
-        private readonly ApprovalDbContext _dbContext;
+        private readonly IInvoiceRepository _repository;
 
-        public SaveNode(ApprovalDbContext dbContext)
+        public SaveNode(IInvoiceRepository repository)
         {
-            _dbContext = dbContext;
+            _repository = repository;
         }
 
         public async Task ExecuteAsync(WorkflowContext context)
         {
-            var invoiceEvent = (InvoiceSubmittedEvent)context.Invoice;
+            var invoice = context.Invoice as InvoiceSubmittedEvent;
+            if (invoice == null) return;
 
-            var dbLineItems = invoiceEvent.LineItems.Select(item =>
-                new LineItemApproval(
-                    item.Description,
-                    item.Quantity,
-                    item.UnitPrice
-                )
-            ).ToList();
+            var existingApproval = await _repository.GetByIdAsync(invoice.Id);
 
-            var approvalRecord = new InvoiceApproval(
-                            invoiceEvent.Id,
-                            invoiceEvent.TrackingId,
-                            invoiceEvent.Submitter,
-                            invoiceEvent.Department,
-                            invoiceEvent.Vendor,
-                            invoiceEvent.VendorKnown,
-                            invoiceEvent.InvoiceNumber,
-                            invoiceEvent.Category,
-                            invoiceEvent.Currency,
-                            dbLineItems,
-                            invoiceEvent.TaxAmount,
-                            invoiceEvent.Total,
-                            invoiceEvent.ReceiptPresent,
-                            invoiceEvent.InvoiceDate,
-                            invoiceEvent.Notes
-                        );
+            var targetStatus = context.FinalDecision == "HumanReview"
+                ? ApprovalStatus.HumanReview
+                : ApprovalStatus.Approved;
 
-            string violationsSummary = string.Join(" | ", context.PolicyViolations);
-
-            approvalRecord.SetAiTriageResults(
-                urgency: context.Confidence < 0.5 ? "High" : "Medium", // לוגיקת דחיפות בסיסית
-                suggestedCategory: context.Category ?? "Other",
-                reasoning: $"Decision: {context.FinalDecision}. Violations: {violationsSummary}"
-            );
-            if (context.FinalDecision == "Approved")
+            if (existingApproval != null)
             {
-                approvalRecord.ChangeStatus(Shared.Enums.ApprovalStatus.Approved);
+                existingApproval.ChangeStatus(targetStatus);
             }
             else
             {
-                approvalRecord.ChangeStatus(Shared.Enums.ApprovalStatus.Pending);
+                var approvalLineItems = invoice.LineItems.Select(item =>
+                    new LineItemApproval(item.Description, item.Quantity, item.UnitPrice)
+                ).ToList();
+
+                var newApproval = new InvoiceApproval(
+                    invoice.Id,
+                    invoice.TrackingId,
+                    invoice.Submitter,
+                    invoice.Department,
+                    invoice.Vendor,
+                    invoice.VendorKnown,
+                    invoice.InvoiceNumber,
+                    invoice.Category,
+                    invoice.Currency,
+                    approvalLineItems,
+                    invoice.TaxAmount,
+                    invoice.Total,
+                    invoice.ReceiptPresent,
+                    invoice.InvoiceDate,
+                    invoice.Notes
+                );
+
+                newApproval.ChangeStatus(targetStatus);
+                await _repository.AddAsync(newApproval);
             }
-            await _dbContext.InvoiceApprovals.AddAsync(approvalRecord);
-            await _dbContext.SaveChangesAsync();
+
+            await _repository.SaveChangesAsync();
         }
     }
 }

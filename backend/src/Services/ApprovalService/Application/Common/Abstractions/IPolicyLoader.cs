@@ -3,5 +3,7 @@
     public interface IPolicyLoader
     {
         string LoadPolicy();
+        decimal GetDecimalThreshold(string key, decimal defaultValue); 
+        decimal GetSaaSLimit(decimal defaultValue);
     }
 }
