@@ -1,0 +1,41 @@
+services:
+  # --- PostgreSQL Database ---
+  postgres:
+    image: postgres:15-alpine
+    container_name: approvalflow-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: submissiondb
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # --- Redis (State Store) ---
+  redis:
+    image: redis:7-alpine
+    container_name: approvalflow-redis
+    ports:
+      - "6380:6379"
+
+  # --- RabbitMQ (Pub/Sub) ---
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: approvalflow-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  # --- Ollama (AI Provider) ---
+  ollama:
+    image: ollama/ollama:latest
+    container_name: approvalflow-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+
+volumes:
+  postgres_data:
+  ollama_data:
