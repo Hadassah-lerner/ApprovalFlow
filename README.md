@@ -157,3 +157,7 @@ docker compose up --build
 - Dapr Pub/Sub messaging
 - Clean Architecture
 - Independent service boundaries
+
+> **Architecture Note**
+>
+> The diagrams below illustrate the intended target architecture and end-to-end workflow of the project. The current implementation demonstrates the core concepts and most of the processing pipeline, while some advanced capabilities remain planned for future iterations.
