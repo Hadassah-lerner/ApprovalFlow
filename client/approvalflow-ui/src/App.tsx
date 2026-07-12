@@ -1,121 +1,100 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
 import './App.css'
+import { ApprovalWorkspace } from './components/ApprovalWorkspace'
+import { InvoiceSubmissionForm } from './components/InvoiceSubmissionForm'
+import { WorkflowMonitor } from './components/WorkflowMonitor'
+import { InvoiceLifecycleProvider } from './context/InvoiceLifecycleContext'
+import { useInvoiceLifecycle } from './hooks/useInvoiceLifecycle'
 
-function App() {
-  const [count, setCount] = useState(0)
+type View = 'submit' | 'approval' | 'workflow'
+
+const views: Array<{ id: View; label: string }> = [
+  { id: 'submit', label: 'Submission' },
+  { id: 'approval', label: 'Approvals' },
+  { id: 'workflow', label: 'Workflow' },
+]
+
+function Dashboard() {
+  const [activeView, setActiveView] = useState<View>('submit')
+  const [logoFailed, setLogoFailed] = useState(false)
+  const { error, workflow = [], approvals = [] } = useInvoiceLifecycle()
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
+    <main className="app-shell">
+      <aside className="sidebar">
+        <div className="brand-lockup">
+          <span className="brand-mark">
+            {logoFailed ? (
+              <span className="brand-fallback">ZN</span>
+            ) : (
+              <img
+                crossOrigin="anonymous"
+                src="/src/assets/zionnet-logo.png"
+                alt="Zion-Net logo"
+                onError={() => setLogoFailed(true)}
+              />
+            )}
+          </span>
+          <div>
+            <strong>ApprovalFlow</strong>
+            <span>Invoice Lifecycle Platform</span>
+          </div>
         </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
+
+        <nav className="nav-list" aria-label="Dashboard views">
+          {views.map((view) => (
+            <button
+              className={activeView === view.id ? 'nav-item active' : 'nav-item'}
+              key={view.id}
+              type="button"
+              onClick={() => setActiveView(view.id)}
+            >
+              {view.label}
+            </button>
+          ))}
+        </nav>
+      </aside>
+
+      <section className="content-shell">
+        <header className="topbar">
+          <div>
+            <p className="eyebrow">Distributed Console</p>
+            <h1>Invoice Lifecycle Command Center</h1>
+          </div>
+          <div className="kpi-strip">
+            <div>
+              <span>Pending</span>
+              <strong>{approvals?.length ?? 0}</strong>
+            </div>
+            <div>
+              <span>Tracked</span>
+              <strong>{workflow?.length ?? 0}</strong>
+            </div>
+          </div>
+        </header>
+
+        {error && (
+          <p className="error-banner">
+            {error.status ? `${error.status}: ` : ''}
+            {error.message}
           </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+        )}
 
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
+        <div className="view-stack">
+          {activeView === 'submit' && <InvoiceSubmissionForm />}
+          {activeView === 'approval' && <ApprovalWorkspace />}
+          {activeView === 'workflow' && <WorkflowMonitor />}
         </div>
       </section>
+    </main>
+  )
+}
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+function App() {
+  return (
+    <InvoiceLifecycleProvider>
+      <Dashboard />
+    </InvoiceLifecycleProvider>
   )
 }
 
