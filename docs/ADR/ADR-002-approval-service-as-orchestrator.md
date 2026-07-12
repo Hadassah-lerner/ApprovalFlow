@@ -9,7 +9,7 @@ Without a central coordinator, asynchronous services may execute in an invalid o
 
 ## Decision:
 The *Approval Service* acts as the single orchestration point responsible for coordinating the workflow lifecycle.
-It controls the workflow state, determines which step executes next, and manages pause/resume, retries, and starting the payment process.
+It controls the workflow state, determines which step executes next, and coordinates the workflow lifecycle, determines the next processing step, and initiates payment for approved invoices.
 
 ## Alternatives Considered:
 *Separate Workflow Service*
