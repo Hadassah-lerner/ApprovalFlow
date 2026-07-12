@@ -20,6 +20,7 @@ namespace SubmissionService.Domain.Entities
         public DateTime InvoiceDate { get; private set; }
         public string Notes { get; private set; }  = string.Empty;
         public ApprovalStatus ApprovalStatus { get; private set; }
+        public DateTime? UpdatedAt { get; private set; }
         public decimal LineItemsTotal =>
         LineItems.Sum(x => x.Total);
         public bool RequiresReceipt => Total > 25;
@@ -58,7 +59,7 @@ namespace SubmissionService.Domain.Entities
             InvoiceDate = invoiceDate;
             Notes = notes;
 
-            ApprovalStatus = ApprovalStatus.Pending;
+            ApprovalStatus = ApprovalStatus.Submitted;
         }
         public void ChangeStatus(ApprovalStatus status)
         {
@@ -70,6 +71,12 @@ namespace SubmissionService.Domain.Entities
             return Vendor == other.Vendor &&
                    InvoiceNumber == other.InvoiceNumber &&
                    Total == other.Total;
+        }
+
+        public void UpdateStatus(Shared.Enums.ApprovalStatus newStatus)
+        {
+            ApprovalStatus = newStatus;
+            UpdatedAt = DateTime.UtcNow;
         }
 
         private Invoice()

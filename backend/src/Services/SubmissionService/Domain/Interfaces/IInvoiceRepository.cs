@@ -8,6 +8,8 @@ namespace SubmissionService.Domain.Interfaces
 
         Task<Invoice?> GetByIdAsync(Guid id);
 
+        Task<Invoice?> GetByTrackingIdAsync(string trackingId);
+
         Task<IEnumerable<Invoice>> GetAllAsync();
 
         void Update(Invoice invoice);

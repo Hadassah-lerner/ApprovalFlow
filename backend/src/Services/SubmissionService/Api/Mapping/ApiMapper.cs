@@ -1,4 +1,5 @@
-﻿using SubmissionService.Api.Requests;
+﻿using Shared.Enums;
+using SubmissionService.Api.Requests;
 using SubmissionService.Api.Responses;
 using SubmissionService.Application.Features.InvoiceSubmission.DTOs;
 using SubmissionService.Domain.Entities;
@@ -57,7 +58,8 @@ public static class ApiMapper
             Currency = invoice.Currency,
             Total = invoice.Total,
             TaxAmount = invoice.TaxAmount,
-            Status = invoice.ApprovalStatus.ToString()
+            Status = invoice.ApprovalStatus.ToString(),
+            UpdatedAt = invoice.UpdatedAt
         };
     }
 }

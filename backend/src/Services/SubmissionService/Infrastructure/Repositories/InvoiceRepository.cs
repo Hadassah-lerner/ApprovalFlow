@@ -23,9 +23,13 @@ namespace SubmissionService.Infrastructure.Repositories
         public async Task<Invoice?> GetByIdAsync(Guid id)
         {
             return await _context.Invoices
-                .AsNoTracking()
-                .Include(i => i.LineItems)
-                .FirstOrDefaultAsync(i => i.Id == id);
+                .Include(x => x.LineItems)
+                .FirstOrDefaultAsync(x => x.Id == id);
+        }
+
+        public async Task<Invoice?> GetByTrackingIdAsync(string trackingId)
+        {
+            return await _context.Invoices.FirstOrDefaultAsync(x => x.TrackingId == trackingId);
         }
 
         public async Task<IEnumerable<Invoice>> GetAllAsync()

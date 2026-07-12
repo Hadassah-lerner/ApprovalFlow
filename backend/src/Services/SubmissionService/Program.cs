@@ -7,7 +7,12 @@ using SubmissionService.Infrastructure.Time;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+    })
+    .AddDapr();
 
 builder.Services.AddEndpointsApiExplorer();
 
@@ -34,8 +39,11 @@ app.UseSwaggerUI(c =>
     c.SwaggerEndpoint("/submission/swagger/v1/swagger.json", "Submission API V1");
     c.RoutePrefix = "submission/swagger";
 });
+app.UseCloudEvents();
 
 app.MapControllers();
+
+app.MapSubscribeHandler();
 
 using (var scope = app.Services.CreateScope())
 {

@@ -1,4 +1,5 @@
-﻿using SubmissionService.Application.Common.Abstractions;
+﻿using Shared.Enums;
+using SubmissionService.Application.Common.Abstractions;
 using SubmissionService.Application.Features.InvoiceSubmission.DTOs;
 using SubmissionService.Application.Features.InvoiceSubmission.Mapping;
 using SubmissionService.Application.Features.InvoiceSubmission.Validators;
@@ -33,6 +34,7 @@ public class InvoiceSubmissionService
         }
 
         var invoice = InvoiceMapper.ToEntity(request);
+        invoice.ChangeStatus(ApprovalStatus.Submitted);
 
         var exists = await _repository.ExistsAsync(
             invoice.Vendor,
@@ -63,5 +65,10 @@ public class InvoiceSubmissionService
     public Task<IEnumerable<Invoice>> GetAllAsync()
     {
         return _repository.GetAllAsync();
+    }
+
+    public async Task SaveChangesAsync()
+    {
+        await _repository.SaveChangesAsync();
     }
 }
